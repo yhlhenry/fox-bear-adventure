@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>小狐熊大冒險 - Fox Bear Adventure</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="game-container">
+    <!-- Top bar: currency + energy -->
+    <div id="top-bar">
+      <div id="currency-display">
+        <span id="coins-display">🪙 0</span>
+        <span id="gems-display">💎 0</span>
+        <span id="stars-display">⭐ 0</span>
+      </div>
+      <div id="energy-bar-container">
+        <div id="energy-bar">
+          <div id="energy-fill"></div>
+        </div>
+        <span id="energy-text">⚡ 100/100</span>
+      </div>
+    </div>
+
+    <!-- Main game canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Order panel -->
+    <div id="order-panel" class="hidden">
+      <div id="order-panel-header">📋 訂單</div>
+      <div id="order-slots"></div>
+    </div>
+
+    <!-- Inventory drawer -->
+    <div id="inventory-drawer" class="hidden">
+      <div id="inventory-header">📦 倉庫</div>
+      <div id="inventory-grid"></div>
+    </div>
+
+    <!-- Bottom toolbar -->
+    <div id="bottom-bar">
+      <button id="btn-orders" class="toolbar-btn">📋</button>
+      <button id="btn-build" class="toolbar-btn">🏠</button>
+      <button id="btn-inventory" class="toolbar-btn">📦</button>
+      <button id="btn-shop" class="toolbar-btn">🛒</button>
+      <button id="btn-collection" class="toolbar-btn">📖</button>
+    </div>
+
+    <!-- Dialogue overlay -->
+    <div id="dialogue-overlay" class="hidden">
+      <div id="dialogue-box">
+        <div id="dialogue-portrait"></div>
+        <div id="dialogue-content">
+          <div id="dialogue-name"></div>
+          <div id="dialogue-text"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Building view -->
+    <div id="building-view" class="hidden">
+      <div id="building-header">
+        <button id="btn-back-grid" class="toolbar-btn">← 返回</button>
+        <span id="building-title">星露森林</span>
+      </div>
+      <canvas id="building-canvas"></canvas>
+      <div id="building-tasks"></div>
+    </div>
+
+    <!-- Shop overlay -->
+    <div id="shop-overlay" class="hidden">
+      <div id="shop-panel">
+        <div id="shop-header">
+          <span>🛒 商店</span>
+          <button id="btn-close-shop" class="close-btn">✕</button>
+        </div>
+        <div id="shop-items"></div>
+      </div>
+    </div>
+
+    <!-- Collection overlay -->
+    <div id="collection-overlay" class="hidden">
+      <div id="collection-panel">
+        <div id="collection-header">
+          <span>📖 森林圖鑑</span>
+          <button id="btn-close-collection" class="close-btn">✕</button>
+        </div>
+        <div id="collection-content"></div>
+      </div>
+    </div>
+
+    <!-- Tutorial overlay -->
+    <div id="tutorial-overlay" class="hidden">
+      <div id="tutorial-highlight"></div>
+      <div id="tutorial-arrow"></div>
+      <div id="tutorial-text-box">
+        <div id="tutorial-text"></div>
+        <button id="tutorial-next-btn">下一步</button>
+      </div>
+    </div>
+
+    <!-- Sell zone -->
+    <div id="sell-zone" class="hidden">
+      <span>🗑️ 出售</span>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toast-container"></div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/save.js"></script>
+  <script src="js/item.js"></script>
+  <script src="js/grid.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/energy.js"></script>
+  <script src="js/producer.js"></script>
+  <script src="js/merge.js"></script>
+  <script src="js/economy.js"></script>
+  <script src="js/order.js"></script>
+  <script src="js/inventory.js"></script>
+  <script src="js/building.js"></script>
+  <script src="js/dialogue.js"></script>
+  <script src="js/tutorial.js"></script>
+  <script src="js/events.js"></script>
+  <script src="js/items-special.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

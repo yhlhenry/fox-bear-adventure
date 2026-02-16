@@ -172,6 +172,7 @@ html, body {
 
 #order-panel.hidden {
   transform: translateX(100%);
+  pointer-events: none;
 }
 
 #order-panel-header {
@@ -257,6 +258,7 @@ html, body {
 
 #inventory-drawer.hidden {
   transform: translateY(100%);
+  pointer-events: none;
 }
 
 #inventory-header {

@@ -2,18 +2,14 @@
 const Renderer = {
   canvas: null,
   ctx: null,
-  scale: 1,
+  cellSize: 40,
+  canvasW: 280,
+  canvasH: 360,
   animFrame: null,
 
   init() {
     this.canvas = document.getElementById('game-canvas');
     this.ctx = this.canvas.getContext('2d');
-
-    // Set internal resolution
-    this.canvas.width = CONFIG.CANVAS_WIDTH;
-    this.canvas.height = CONFIG.CANVAS_HEIGHT;
-
-    // Pixelated rendering
     this.ctx.imageSmoothingEnabled = false;
 
     this._resize();
@@ -26,22 +22,30 @@ const Renderer = {
     const bottomBar = document.getElementById('bottom-bar');
 
     const availWidth = container.clientWidth;
-    const availHeight = container.clientHeight - (topBar?.offsetHeight || 0) - (bottomBar?.offsetHeight || 0);
+    const availHeight = container.clientHeight
+      - (topBar?.offsetHeight || 0)
+      - (bottomBar?.offsetHeight || 0);
 
-    // Maintain aspect ratio
-    const aspectRatio = CONFIG.CANVAS_WIDTH / CONFIG.CANVAS_HEIGHT;
-    let w = availWidth;
-    let h = w / aspectRatio;
+    // Calculate cell size to fill available space
+    const cellByWidth = Math.floor(availWidth / CONFIG.GRID_COLS);
+    const cellByHeight = Math.floor(availHeight / CONFIG.GRID_ROWS);
+    this.cellSize = Math.min(cellByWidth, cellByHeight);
 
-    if (h > availHeight) {
-      h = availHeight;
-      w = h * aspectRatio;
-    }
+    // Update the global CONFIG so other systems use the same value
+    CONFIG.CELL_SIZE = this.cellSize;
 
-    this.canvas.style.width = `${w}px`;
-    this.canvas.style.height = `${h}px`;
+    this.canvasW = this.cellSize * CONFIG.GRID_COLS;
+    this.canvasH = this.cellSize * CONFIG.GRID_ROWS;
 
-    this.scale = w / CONFIG.CANVAS_WIDTH;
+    // Set canvas internal resolution to match exactly
+    this.canvas.width = this.canvasW;
+    this.canvas.height = this.canvasH;
+
+    // CSS size = same as internal (1:1 pixel on screen)
+    this.canvas.style.width = `${this.canvasW}px`;
+    this.canvas.style.height = `${this.canvasH}px`;
+
+    this.ctx.imageSmoothingEnabled = false;
   },
 
   startLoop() {
@@ -53,65 +57,47 @@ const Renderer = {
   },
 
   stopLoop() {
-    if (this.animFrame) {
-      cancelAnimationFrame(this.animFrame);
-    }
+    if (this.animFrame) cancelAnimationFrame(this.animFrame);
   },
 
   render() {
     const ctx = this.ctx;
-    const w = CONFIG.CANVAS_WIDTH;
-    const h = CONFIG.CANVAS_HEIGHT;
+    const w = this.canvasW;
+    const h = this.canvasH;
 
-    // Clear
     ctx.fillStyle = '#1e3a1e';
     ctx.fillRect(0, 0, w, h);
 
-    // Draw grid
     this._drawGrid(ctx);
-
-    // Draw items
     this._drawItems(ctx);
-
-    // Draw bubble timers
     this._drawBubbles(ctx);
 
-    // Draw animations
     MergeSystem.updateAnimations();
     MergeSystem.renderAnimations(ctx);
-
-    // Draw drag ghost
     MergeSystem.renderDragGhost(ctx);
   },
 
   _drawGrid(ctx) {
-    const cs = CONFIG.CELL_SIZE;
+    const cs = this.cellSize;
 
-    for (let row = 0; row < Grid.rows; row++) {
-      for (let col = 0; col < Grid.cols; col++) {
+    for (let row = 0; row < CONFIG.GRID_ROWS; row++) {
+      for (let col = 0; col < CONFIG.GRID_COLS; col++) {
         const x = col * cs;
         const y = row * cs;
         const idx = Grid.getIndex(row, col);
 
-        // Cell background
         if (Grid.cellStates[idx] === 'locked') {
           ctx.fillStyle = '#1a1a1a';
           ctx.fillRect(x, y, cs, cs);
-          // Cobweb pattern
           ctx.strokeStyle = '#333';
           ctx.lineWidth = 0.5;
           ctx.beginPath();
-          ctx.moveTo(x, y);
-          ctx.lineTo(x + cs, y + cs);
-          ctx.moveTo(x + cs, y);
-          ctx.lineTo(x, y + cs);
-          ctx.moveTo(x + cs / 2, y);
-          ctx.lineTo(x + cs / 2, y + cs);
-          ctx.moveTo(x, y + cs / 2);
-          ctx.lineTo(x + cs, y + cs / 2);
+          ctx.moveTo(x, y); ctx.lineTo(x + cs, y + cs);
+          ctx.moveTo(x + cs, y); ctx.lineTo(x, y + cs);
+          ctx.moveTo(x + cs / 2, y); ctx.lineTo(x + cs / 2, y + cs);
+          ctx.moveTo(x, y + cs / 2); ctx.lineTo(x + cs, y + cs / 2);
           ctx.stroke();
-          // Lock icon
-          ctx.font = '12px serif';
+          ctx.font = `${cs * 0.4}px serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillStyle = '#555';
@@ -121,12 +107,10 @@ const Renderer = {
           ctx.fillRect(x, y, cs, cs);
         }
 
-        // Grid lines
         ctx.strokeStyle = '#2d5a2d';
         ctx.lineWidth = 1;
         ctx.strokeRect(x + 0.5, y + 0.5, cs - 1, cs - 1);
 
-        // Highlight for drag source (dimmed)
         if (MergeSystem.isDragging && idx === MergeSystem.dragSourceIndex) {
           ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
           ctx.fillRect(x, y, cs, cs);
@@ -136,13 +120,11 @@ const Renderer = {
   },
 
   _drawItems(ctx) {
-    const cs = CONFIG.CELL_SIZE;
+    const cs = this.cellSize;
 
     for (let i = 0; i < Grid.cells.length; i++) {
       const item = Grid.cells[i];
       if (!item) continue;
-
-      // Skip dragged item at source (it's rendered as ghost)
       if (MergeSystem.isDragging && i === MergeSystem.dragSourceIndex) continue;
 
       const { row, col } = Grid.getRowCol(i);
@@ -165,14 +147,12 @@ const Renderer = {
         ctx.restore();
       }
 
-      // Draw emoji
       let emoji, fontSize;
       if (item.isProducer) {
         const def = PRODUCERS[item.producerId];
         emoji = def ? def.emoji : '?';
         fontSize = cs * 0.55;
 
-        // Producer glow
         ctx.save();
         ctx.shadowColor = '#fbbf24';
         ctx.shadowBlur = 4 + Math.sin(Date.now() / 500) * 2;
@@ -180,13 +160,12 @@ const Renderer = {
         ctx.fillRect(x + 2, y + 2, cs - 4, cs - 4);
         ctx.restore();
 
-        // Buffer indicator
         const info = ProducerSystem.getBufferInfo(item.producerId);
         if (info) {
           const barW = cs - 8;
-          const barH = 3;
+          const barH = Math.max(3, cs * 0.06);
           const barX = x + 4;
-          const barY = y + cs - 6;
+          const barY = y + cs - barH - 3;
           ctx.fillStyle = 'rgba(0,0,0,0.5)';
           ctx.fillRect(barX, barY, barW, barH);
           const pct = info.remaining / info.total;
@@ -203,23 +182,24 @@ const Renderer = {
       ctx.textBaseline = 'middle';
       ctx.fillText(emoji, cx, cy);
 
-      // Level badge (non-producer only)
+      // Level badge
       if (!item.isProducer && item.level > 0) {
-        const badgeX = x + cs - 10;
-        const badgeY = y + 2;
+        const badgeS = Math.max(12, cs * 0.25);
+        const badgeX = x + cs - badgeS - 1;
+        const badgeY = y + 1;
         ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        ctx.fillRect(badgeX, badgeY, 10, 10);
+        ctx.fillRect(badgeX, badgeY, badgeS, badgeS);
         ctx.fillStyle = '#fff';
-        ctx.font = '7px monospace';
+        ctx.font = `${badgeS * 0.7}px monospace`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(item.level, badgeX + 5, badgeY + 5);
+        ctx.fillText(item.level, badgeX + badgeS / 2, badgeY + badgeS / 2);
       }
     }
   },
 
   _drawBubbles(ctx) {
-    const cs = CONFIG.CELL_SIZE;
+    const cs = this.cellSize;
     const now = Date.now();
 
     for (let i = 0; i < Grid.cells.length; i++) {
@@ -228,7 +208,6 @@ const Renderer = {
 
       const remaining = Math.max(0, item.bubbleExpiry - now);
       if (remaining <= 0) {
-        // Bubble expired - convert to small reward
         Grid.removeItemByIndex(i);
         Economy.addCoins(1);
         continue;
@@ -240,7 +219,7 @@ const Renderer = {
       const seconds = Math.ceil(remaining / 1000);
 
       ctx.fillStyle = '#ef4444';
-      ctx.font = '6px monospace';
+      ctx.font = `${Math.max(8, cs * 0.18)}px monospace`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
       ctx.fillText(`${seconds}s`, x, y);

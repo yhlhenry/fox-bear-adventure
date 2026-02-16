@@ -3,9 +3,8 @@ const CONFIG = {
   // Grid
   GRID_COLS: 7,
   GRID_ROWS: 9,
-  CELL_SIZE: 40, // logical pixels in low-res canvas
-  CANVAS_WIDTH: 280,  // 7 * 40
-  CANVAS_HEIGHT: 504, // 9 * 56 (extra space for producer area)
+  // CELL_SIZE, CANVAS_WIDTH, CANVAS_HEIGHT are computed dynamically by Renderer
+  CELL_SIZE: 40, // default, overwritten at runtime
 
   // Energy
   ENERGY_MAX: 100,

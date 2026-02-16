@@ -28,8 +28,8 @@ const MergeSystem = {
 
   _getCanvasPos(e) {
     const rect = this.canvas.getBoundingClientRect();
-    const scaleX = CONFIG.CANVAS_WIDTH / rect.width;
-    const scaleY = CONFIG.CANVAS_HEIGHT / rect.height;
+    const scaleX = Renderer.canvasW / rect.width;
+    const scaleY = Renderer.canvasH / rect.height;
     return {
       x: (e.clientX - rect.left) * scaleX,
       y: (e.clientY - rect.top) * scaleY,
@@ -250,11 +250,12 @@ const MergeSystem = {
     // Particles
     for (let i = 0; i < CONFIG.PARTICLE_COUNT; i++) {
       const angle = (Math.PI * 2 * i) / CONFIG.PARTICLE_COUNT;
+      const speed = CONFIG.CELL_SIZE * 0.8;
       this.animations.push({
         type: 'particle',
         x, y,
-        vx: Math.cos(angle) * 40,
-        vy: Math.sin(angle) * 40,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
         startTime: now,
         duration: 400,
         color: `hsl(${Math.random() * 60 + 30}, 100%, 70%)`,

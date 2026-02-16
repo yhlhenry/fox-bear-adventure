@@ -37,7 +37,7 @@ html, body {
   background: var(--bg-dark);
   font-family: var(--pixel-font);
   color: var(--text);
-  font-size: 10px;
+  font-size: 14px;
   touch-action: none;
   user-select: none;
 }
@@ -69,7 +69,7 @@ html, body {
 #currency-display {
   display: flex;
   gap: 10px;
-  font-size: 9px;
+  font-size: 12px;
 }
 
 #currency-display span {
@@ -106,7 +106,7 @@ html, body {
 }
 
 #energy-text {
-  font-size: 8px;
+  font-size: 11px;
   color: var(--energy);
   white-space: nowrap;
 }
@@ -159,12 +159,14 @@ html, body {
   position: absolute;
   top: 40px;
   right: 0;
-  width: 200px;
+  width: 220px;
+  max-height: calc(100% - 90px);
+  overflow-y: auto;
   background: var(--panel-bg);
   border: 2px solid var(--bg-light);
   border-radius: 8px 0 0 8px;
   z-index: 20;
-  padding: 8px;
+  padding: 10px;
   transition: transform 0.3s;
 }
 
@@ -173,7 +175,7 @@ html, body {
 }
 
 #order-panel-header {
-  font-size: 10px;
+  font-size: 13px;
   margin-bottom: 8px;
   color: var(--accent2);
   text-align: center;
@@ -213,24 +215,24 @@ html, body {
 }
 
 .order-reward {
-  font-size: 8px;
+  font-size: 11px;
   color: var(--gold);
 }
 
 .order-difficulty {
-  font-size: 7px;
+  font-size: 10px;
   color: var(--text-dim);
 }
 
 .order-complete-btn {
   width: 100%;
-  padding: 4px;
+  padding: 6px;
   background: var(--green);
   color: var(--bg-dark);
   border: none;
-  border-radius: 2px;
+  border-radius: 4px;
   font-family: var(--pixel-font);
-  font-size: 8px;
+  font-size: 11px;
   cursor: pointer;
   display: none;
 }
@@ -258,7 +260,7 @@ html, body {
 }
 
 #inventory-header {
-  font-size: 10px;
+  font-size: 13px;
   margin-bottom: 8px;
   color: var(--accent2);
   text-align: center;
@@ -332,14 +334,14 @@ html, body {
 }
 
 #dialogue-name {
-  font-size: 9px;
+  font-size: 12px;
   color: var(--accent2);
   margin-bottom: 4px;
 }
 
 #dialogue-text {
-  font-size: 8px;
-  line-height: 1.6;
+  font-size: 11px;
+  line-height: 1.8;
   color: var(--text);
 }
 
@@ -370,7 +372,7 @@ html, body {
 }
 
 #building-title {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--accent2);
 }
 
@@ -405,7 +407,7 @@ html, body {
 }
 
 .task-info {
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .task-name {
@@ -418,13 +420,13 @@ html, body {
 }
 
 .task-build-btn {
-  padding: 4px 8px;
+  padding: 6px 12px;
   background: var(--star);
   color: var(--bg-dark);
   border: none;
-  border-radius: 2px;
+  border-radius: 4px;
   font-family: var(--pixel-font);
-  font-size: 7px;
+  font-size: 10px;
   cursor: pointer;
 }
 
@@ -464,7 +466,7 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--accent2);
   margin-bottom: 12px;
 }
@@ -495,17 +497,17 @@ html, body {
 }
 
 .shop-item-info {
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .shop-buy-btn {
-  padding: 4px 8px;
+  padding: 6px 12px;
   background: var(--accent);
   color: white;
   border: none;
-  border-radius: 2px;
+  border-radius: 4px;
   font-family: var(--pixel-font);
-  font-size: 7px;
+  font-size: 10px;
   cursor: pointer;
 }
 
@@ -550,7 +552,7 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--accent2);
   margin-bottom: 12px;
 }
@@ -560,7 +562,7 @@ html, body {
 }
 
 .collection-chain-name {
-  font-size: 9px;
+  font-size: 12px;
   color: var(--accent2);
   margin-bottom: 4px;
 }
@@ -635,19 +637,19 @@ html, body {
 }
 
 #tutorial-text {
-  font-size: 8px;
-  line-height: 1.6;
-  margin-bottom: 8px;
+  font-size: 12px;
+  line-height: 1.8;
+  margin-bottom: 10px;
 }
 
 #tutorial-next-btn {
-  padding: 4px 12px;
+  padding: 8px 16px;
   background: var(--accent2);
   color: var(--bg-dark);
   border: none;
-  border-radius: 2px;
+  border-radius: 4px;
   font-family: var(--pixel-font);
-  font-size: 8px;
+  font-size: 11px;
   cursor: pointer;
 }
 
@@ -694,8 +696,8 @@ html, body {
   background: var(--panel-bg);
   border: 1px solid var(--accent2);
   border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 8px;
+  padding: 8px 16px;
+  font-size: 12px;
   animation: toast-in 0.3s, toast-out 0.3s 2s forwards;
   white-space: nowrap;
 }
@@ -799,7 +801,9 @@ html, body {
 /* ===== Mobile responsive ===== */
 @media (max-width: 400px) {
   #currency-display { gap: 6px; }
-  #currency-display span { padding: 3px 5px; font-size: 8px; }
+  #currency-display span { padding: 3px 5px; font-size: 10px; }
   #energy-bar { width: 60px; }
+  #energy-text { font-size: 9px; }
   .toolbar-btn { padding: 4px 8px; font-size: 16px; }
+  #order-panel { width: 190px; }
 }

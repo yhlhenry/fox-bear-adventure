@@ -73,36 +73,58 @@ const Inventory = {
   },
 
   render() {
-    const container = document.getElementById('inventory-grid');
-    if (!container) return;
+    const grid = document.getElementById('inventory-grid');
+    const expandArea = document.getElementById('inventory-expand-area');
+    if (!grid) return;
 
-    container.innerHTML = '';
+    grid.innerHTML = '';
 
-    for (let i = 0; i < CONFIG.INVENTORY_MAX_SLOTS; i++) {
-      const slot = document.createElement('div');
-
-      if (i < this.slots) {
+    if (this.slots === 0) {
+      const msg = document.createElement('div');
+      msg.className = 'inventory-empty-msg';
+      msg.textContent = '倉庫尚未開啟，點擊下方擴充！';
+      msg.style.gridColumn = '1 / -1';
+      grid.appendChild(msg);
+    } else {
+      for (let i = 0; i < this.slots; i++) {
+        const slot = document.createElement('div');
         slot.className = 'inventory-slot';
         const item = this.items[i];
         if (item) {
           slot.textContent = item.getEmoji();
-          slot.title = `${item.getName()} Lv${item.level}`;
+          slot.title = `${item.getName()} Lv${item.level} — 點擊取回`;
           slot.onclick = () => this.retrieveItem(i);
         }
-      } else {
-        slot.className = 'inventory-slot locked';
-        if (i === this.slots) {
-          // Next unlock slot - show cost
-          slot.onclick = () => this.expand();
-          slot.title = `擴充：${this.getExpandCost()} 💎`;
-          slot.style.cursor = 'pointer';
-        }
+        grid.appendChild(slot);
       }
+    }
 
-      container.appendChild(slot);
+    // Expand button
+    if (expandArea) {
+      expandArea.innerHTML = '';
+      if (this.slots < CONFIG.INVENTORY_MAX_SLOTS) {
+        const cost = this.getExpandCost();
+        const btn = document.createElement('button');
+        btn.className = 'inventory-expand-btn';
+        btn.textContent = `擴充倉庫 +1 格（💎 ${cost}）`;
+        btn.disabled = Economy.gems < cost;
+        btn.onclick = () => {
+          if (this.expand()) {
+            this.render();
+          }
+        };
+        expandArea.appendChild(btn);
 
-      // Only show first 2 rows (14 slots) to save space
-      if (i >= 13) break;
+        const info = document.createElement('div');
+        info.style.cssText = 'font-size:10px;color:#888;margin-top:6px;';
+        info.textContent = `已解鎖 ${this.slots}/${CONFIG.INVENTORY_MAX_SLOTS} 格`;
+        expandArea.appendChild(info);
+      } else {
+        const info = document.createElement('div');
+        info.style.cssText = 'font-size:10px;color:#4ade80;margin-top:4px;';
+        info.textContent = '倉庫已全部解鎖！';
+        expandArea.appendChild(info);
+      }
     }
   },
 

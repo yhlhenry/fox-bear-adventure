@@ -21,6 +21,9 @@ const UI = {
     // Building back button
     document.getElementById('btn-back-grid').onclick = () => this.toggleBuildingView();
 
+    // Inventory close
+    document.getElementById('btn-close-inventory').onclick = () => this.toggleInventory();
+
     // Shop close
     document.getElementById('btn-close-shop').onclick = () => this.toggleShop();
 
@@ -42,7 +45,7 @@ const UI = {
 
   toggleInventory() {
     this.inventoryOpen = !this.inventoryOpen;
-    document.getElementById('inventory-drawer').classList.toggle('hidden', !this.inventoryOpen);
+    document.getElementById('inventory-overlay').classList.toggle('hidden', !this.inventoryOpen);
     document.getElementById('btn-inventory').classList.toggle('active', this.inventoryOpen);
 
     if (this.inventoryOpen) {

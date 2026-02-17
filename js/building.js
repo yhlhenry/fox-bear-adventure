@@ -11,12 +11,19 @@ const BuildingSystem = {
     if (savedUnlocked) this.unlockedAreas = savedUnlocked;
 
     this.canvas = document.getElementById('building-canvas');
-    if (this.canvas) {
-      this.ctx = this.canvas.getContext('2d');
-      this.canvas.width = CONFIG.CANVAS_WIDTH;
-      this.canvas.height = 300;
-      this.ctx.imageSmoothingEnabled = false;
-    }
+  },
+
+  _ensureCanvas() {
+    if (!this.canvas) return;
+    const container = document.getElementById('building-view');
+    const header = document.getElementById('building-header');
+    const tasks = document.getElementById('building-tasks');
+    const w = container.clientWidth;
+    const h = container.clientHeight - (header?.offsetHeight || 40) - (tasks?.offsetHeight || 200);
+    this.canvas.width = Math.max(w, 280);
+    this.canvas.height = Math.max(h, 200);
+    this.ctx = this.canvas.getContext('2d');
+    this.ctx.imageSmoothingEnabled = false;
   },
 
   show() {
@@ -24,7 +31,11 @@ const BuildingSystem = {
     if (!this.currentArea) {
       this.currentArea = this.unlockedAreas[0] || 'treehouse';
     }
-    this.renderBuildingView();
+    // Delay render to let DOM layout settle
+    requestAnimationFrame(() => {
+      this._ensureCanvas();
+      this.renderBuildingView();
+    });
   },
 
   hide() {
@@ -203,6 +214,7 @@ const BuildingSystem = {
   },
 
   _renderVillage() {
+    this._ensureCanvas();
     if (!this.ctx) return;
     const ctx = this.ctx;
     const w = this.canvas.width;
@@ -212,75 +224,97 @@ const BuildingSystem = {
     ctx.fillStyle = '#1a3a1a';
     ctx.fillRect(0, 0, w, h);
 
-    // Sky
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.5);
+    // Sky gradient
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.55);
     skyGrad.addColorStop(0, '#0a0a2e');
     skyGrad.addColorStop(1, '#1a3a3a');
     ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, w, h * 0.5);
+    ctx.fillRect(0, 0, w, h * 0.55);
 
-    // Stars in sky
-    for (let i = 0; i < 20; i++) {
+    // Stars
+    for (let i = 0; i < 30; i++) {
       const sx = (i * 37 + 13) % w;
-      const sy = (i * 23 + 7) % (h * 0.4);
-      ctx.fillStyle = `rgba(255,255,255,${0.3 + Math.sin(Date.now() / 1000 + i) * 0.3})`;
-      ctx.fillRect(sx, sy, 1, 1);
+      const sy = (i * 23 + 7) % (h * 0.45);
+      const brightness = 0.3 + Math.sin(Date.now() / 1000 + i) * 0.3;
+      ctx.fillStyle = `rgba(255,255,255,${brightness})`;
+      const size = i % 3 === 0 ? 2 : 1;
+      ctx.fillRect(sx, sy, size, size);
     }
 
     // Ground
     ctx.fillStyle = '#2d5a2d';
     ctx.fillRect(0, h * 0.5, w, h * 0.5);
 
-    // Draw buildings
-    const areaPositions = [
-      { x: 20, y: h * 0.3 },    // treehouse
-      { x: 100, y: h * 0.4 },   // market
-      { x: 180, y: h * 0.35 },  // fishing
-      { x: 30, y: h * 0.55 },   // garden
-      { x: 120, y: h * 0.6 },   // tower
-      { x: 200, y: h * 0.55 },  // library
-    ];
+    // Ground texture
+    ctx.fillStyle = '#357035';
+    for (let i = 0; i < 15; i++) {
+      const gx = (i * 47 + 10) % w;
+      const gy = h * 0.55 + (i * 19 + 5) % (h * 0.4);
+      ctx.fillRect(gx, gy, 3, 1);
+    }
+
+    // Calculate building layout based on canvas size
+    const colCount = 3;
+    const rowCount = 2;
+    const margin = w * 0.06;
+    const bw = (w - margin * (colCount + 1)) / colCount;
+    const bh = bw * 0.75;
+    const startY = h * 0.2;
+    const rowGap = bh + margin * 1.5;
 
     for (let i = 0; i < CONFIG.AREAS.length; i++) {
       const area = CONFIG.AREAS[i];
-      const pos = areaPositions[i];
+      const col = i % colCount;
+      const row = Math.floor(i / colCount);
+      const px = margin + col * (bw + margin);
+      const py = startY + row * rowGap;
+
       const unlocked = this.unlockedAreas.includes(area.id);
       const progress = this.getAreaProgress(area.id);
       const completeness = progress.total > 0 ? progress.done / progress.total : 0;
 
       ctx.save();
-      if (!unlocked) {
-        ctx.globalAlpha = 0.3;
-      }
+      if (!unlocked) ctx.globalAlpha = 0.3;
+
+      // Building shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.fillRect(px + 3, py + 3, bw, bh);
 
       // Building base
-      const bw = 60, bh = 50;
-      ctx.fillStyle = unlocked
-        ? `rgba(${Math.floor(100 + completeness * 155)}, ${Math.floor(80 + completeness * 100)}, 60, 0.9)`
-        : '#333';
-      ctx.fillRect(pos.x, pos.y, bw, bh);
+      const r = Math.floor(100 + completeness * 155);
+      const g = Math.floor(80 + completeness * 100);
+      ctx.fillStyle = unlocked ? `rgb(${r}, ${g}, 60)` : '#333';
+      ctx.fillRect(px, py, bw, bh);
 
       // Roof
       ctx.fillStyle = unlocked ? '#8B4513' : '#222';
       ctx.beginPath();
-      ctx.moveTo(pos.x - 5, pos.y);
-      ctx.lineTo(pos.x + bw / 2, pos.y - 20);
-      ctx.lineTo(pos.x + bw + 5, pos.y);
+      ctx.moveTo(px - 4, py);
+      ctx.lineTo(px + bw / 2, py - bh * 0.35);
+      ctx.lineTo(px + bw + 4, py);
       ctx.fill();
 
       // Icon
-      ctx.font = '20px serif';
+      const iconSize = Math.min(bw, bh) * 0.45;
+      ctx.font = `${iconSize}px serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(area.icon, pos.x + bw / 2, pos.y + bh / 2);
+      ctx.fillText(area.icon, px + bw / 2, py + bh / 2);
+
+      // Area name
+      ctx.fillStyle = unlocked ? '#e0e0e0' : '#666';
+      ctx.font = `${Math.max(9, bw * 0.1)}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText(area.name, px + bw / 2, py + bh + 12);
 
       // Progress bar
       if (unlocked) {
-        const barY = pos.y + bh + 4;
+        const barY = py + bh + 20;
+        const barH = 4;
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.fillRect(pos.x, barY, bw, 4);
+        ctx.fillRect(px, barY, bw, barH);
         ctx.fillStyle = completeness >= 1 ? '#4ade80' : '#fbbf24';
-        ctx.fillRect(pos.x, barY, bw * completeness, 4);
+        ctx.fillRect(px, barY, bw * completeness, barH);
       }
 
       ctx.restore();

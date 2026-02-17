@@ -30,9 +30,12 @@ const MergeSystem = {
     const rect = this.canvas.getBoundingClientRect();
     const scaleX = Renderer.canvasW / rect.width;
     const scaleY = Renderer.canvasH / rect.height;
+    // Convert to canvas coords, then subtract grid offset
+    const canvasX = (e.clientX - rect.left) * scaleX;
+    const canvasY = (e.clientY - rect.top) * scaleY;
     return {
-      x: (e.clientX - rect.left) * scaleX,
-      y: (e.clientY - rect.top) * scaleY,
+      x: canvasX,
+      y: canvasY - Renderer.offsetY,
     };
   },
 

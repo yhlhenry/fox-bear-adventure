@@ -5,6 +5,7 @@ const Renderer = {
   cellSize: 40,
   canvasW: 280,
   canvasH: 360,
+  offsetY: 0, // vertical offset to center grid
   animFrame: null,
 
   init() {
@@ -26,26 +27,36 @@ const Renderer = {
       - (topBar?.offsetHeight || 0)
       - (bottomBar?.offsetHeight || 0);
 
-    // Calculate cell size to fill available space
-    const cellByWidth = Math.floor(availWidth / CONFIG.GRID_COLS);
-    const cellByHeight = Math.floor(availHeight / CONFIG.GRID_ROWS);
-    this.cellSize = Math.min(cellByWidth, cellByHeight);
-
-    // Update the global CONFIG so other systems use the same value
+    // Cell size determined by width (fill horizontally)
+    this.cellSize = Math.floor(availWidth / CONFIG.GRID_COLS);
     CONFIG.CELL_SIZE = this.cellSize;
 
-    this.canvasW = this.cellSize * CONFIG.GRID_COLS;
-    this.canvasH = this.cellSize * CONFIG.GRID_ROWS;
+    const gridW = this.cellSize * CONFIG.GRID_COLS;
+    const gridH = this.cellSize * CONFIG.GRID_ROWS;
 
-    // Set canvas internal resolution to match exactly
+    // Canvas fills all available space
+    this.canvasW = availWidth;
+    this.canvasH = availHeight;
+
+    // Center grid vertically within canvas
+    this.offsetY = Math.max(0, Math.floor((availHeight - gridH) / 2));
+
     this.canvas.width = this.canvasW;
     this.canvas.height = this.canvasH;
-
-    // CSS size = same as internal (1:1 pixel on screen)
     this.canvas.style.width = `${this.canvasW}px`;
     this.canvas.style.height = `${this.canvasH}px`;
 
     this.ctx.imageSmoothingEnabled = false;
+  },
+
+  // Convert canvas pixel to grid-local pixel (accounting for offset)
+  canvasToGrid(px, py) {
+    return { x: px, y: py - this.offsetY };
+  },
+
+  // Convert grid-local pixel to canvas pixel
+  gridToCanvas(gx, gy) {
+    return { x: gx, y: gy + this.offsetY };
   },
 
   startLoop() {
@@ -65,8 +76,18 @@ const Renderer = {
     const w = this.canvasW;
     const h = this.canvasH;
 
-    ctx.fillStyle = '#1e3a1e';
+    // Background - forest theme
+    ctx.fillStyle = '#0f1f0f';
     ctx.fillRect(0, 0, w, h);
+
+    // Decorative area above grid
+    if (this.offsetY > 0) {
+      this._drawDecoTop(ctx, w, this.offsetY);
+    }
+
+    // Translate for grid drawing
+    ctx.save();
+    ctx.translate(0, this.offsetY);
 
     this._drawGrid(ctx);
     this._drawItems(ctx);
@@ -75,6 +96,53 @@ const Renderer = {
     MergeSystem.updateAnimations();
     MergeSystem.renderAnimations(ctx);
     MergeSystem.renderDragGhost(ctx);
+
+    ctx.restore();
+
+    // Decorative area below grid
+    const gridBottom = this.offsetY + this.cellSize * CONFIG.GRID_ROWS;
+    if (gridBottom < h) {
+      this._drawDecoBottom(ctx, w, gridBottom, h - gridBottom);
+    }
+  },
+
+  _drawDecoTop(ctx, w, h) {
+    // Dark forest canopy
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, '#0a150a');
+    grad.addColorStop(1, '#1e3a1e');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Tree silhouettes
+    ctx.fillStyle = '#0d1f0d';
+    const treeW = 30;
+    for (let i = 0; i < w; i += treeW + 10) {
+      const th = h * (0.4 + Math.sin(i * 0.1) * 0.2);
+      // Triangle tree
+      ctx.beginPath();
+      ctx.moveTo(i, h);
+      ctx.lineTo(i + treeW / 2, h - th);
+      ctx.lineTo(i + treeW, h);
+      ctx.fill();
+    }
+  },
+
+  _drawDecoBottom(ctx, w, startY, h) {
+    // Forest floor
+    const grad = ctx.createLinearGradient(0, startY, 0, startY + h);
+    grad.addColorStop(0, '#1e3a1e');
+    grad.addColorStop(1, '#0a150a');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, startY, w, h);
+
+    // Grass tufts
+    ctx.fillStyle = '#2d5a2d';
+    for (let i = 0; i < w; i += 15) {
+      const gh = 3 + Math.sin(i * 0.3) * 2;
+      ctx.fillRect(i, startY, 2, gh);
+      ctx.fillRect(i + 5, startY, 1, gh * 0.7);
+    }
   },
 
   _drawGrid(ctx) {
